@@ -42,6 +42,8 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h3 {
+  font-size: 1.17em;
+  font-weight: bold;
   margin: 40px 0 0;
 }
 ul {
@@ -54,5 +56,12 @@ li {
 }
 a {
   color: #42b983;
+}
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+}
+.hello {
+  margin-top: 60px;
 }
 </style>

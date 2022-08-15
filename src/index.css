@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components  {
+  .textbox {
+    @apply py-2 px-3 border border-gray-300 rounded-md shadow-sm;
+  }
+  .textbox:focus {
+    @apply border-indigo-300 ring ring-indigo-200 ring-opacity-50;
+  }
+  .textbox:focus-visible {
+    outline: none;
+  }
+  .button {
+    @apply inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition ml-4;
+  }
+  .button:focus {
+    @apply outline-none border-gray-900 ring ring-gray-300;
+  }
+
+}

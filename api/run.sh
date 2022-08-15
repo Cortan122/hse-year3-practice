@@ -12,5 +12,16 @@
   npm run build
 )
 
+[ -f .env ] || (
+  cp .env.example .env
+  echo FLASK_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex())')" >> .env
+)
+
+[ -f sqlite.db ] || (
+  . env/bin/activate
+  export $(xargs <.env)
+  ./seed.py
+)
+
 . env/bin/activate
 flask --debug run

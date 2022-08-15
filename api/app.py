@@ -1,29 +1,30 @@
-from flask import Flask, jsonify
+from flask import Flask
 from werkzeug.routing import BaseConverter
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 
 app = Flask(
     __name__,
     static_url_path='',
-    static_folder='../dist'
+    static_folder='../dist',
+    template_folder='../dist',
 )
+app.config.from_prefixed_env()
+login_manager = LoginManager()
+login_manager.init_app(app)
+db = SQLAlchemy(app)
 
 class NoExtentionConverter(BaseConverter):
     regex = r'(?:[a-zA-Z0-9]+)'
 
 app.url_map.converters['ext'] = NoExtentionConverter
 
-api_counter = 0
+from models import User
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
-@app.route("/api/counter")
-def ping():
-    global api_counter
-    api_counter += 1
-    return jsonify(api_counter)
-
-@app.route('/', defaults={'path': ''})
-@app.route('/<ext:path>')
-def index(path):
-    return app.send_static_file('index.html')
+import routes
 
 if __name__ == '__main__':
     app.run()

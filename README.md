@@ -1,24 +1,20 @@
-# client
+# project-tracker
 
-## Project setup
-```
-npm install
-```
+Этот проект представляет собой маленькое веб приложение для трекинга работы над проектами, которое я пишу в плане летней практики.
+Бэкенд написан на Flask, а фронтенд это single page application на Vue.js.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Как запускать программу
 
-### Compiles and minifies for production
-```
-npm run build
+```console
+$ cd api/
+$ ./run.sh
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Todo
+1. api для редактируеммых тегов
+2. ссылки на github
+3. описания сделанного
+4. поп-апы на клиентской стороне
+5. весь админский интерфейс
+6. добавить таймер на видное место
+7. засунуть текст из readme на главную страницу

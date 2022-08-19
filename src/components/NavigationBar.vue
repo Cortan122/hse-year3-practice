@@ -12,7 +12,7 @@
 
           <!-- Navigation Links -->
           <div v-for="item in links" :key="item.index" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-            <NavLink :href="item.path" :active="item.name == this.$route.name">
+            <NavLink :href="item.path" :active="item.name == this.$route.name?.trim()">
               {{ item.name }}
             </NavLink>
           </div>
@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import NavLink from '@/components/NavLink.vue'
+import NavLink from '@/components/NavLink'
 
 export default {
   name: 'NavigationBar',

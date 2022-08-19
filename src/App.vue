@@ -1,20 +1,25 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50">
     <NavigationBar :routes="routes" :authLevel="authLevel" />
-    <main class="flex-grow">
-      <router-view/>
-    </main>
+    <div class="flex flex-row flex-grow">
+      <ProjectTree :class="this.$route.name?.trim() == 'My Projects' ? '' : 'hidden'" v-if="authLevel" />
+      <main class="flex-grow">
+        <router-view/>
+      </main>
+    </div>
   </div>
 </template>
 
 <script>
-import NavigationBar from '@/components/NavigationBar.vue'
+import NavigationBar from '@/components/NavigationBar'
+import ProjectTree from '@/components/ProjectTree'
 import routes from '@/routes.js'
 
 export default {
   name: 'App',
   components: {
     NavigationBar,
+    ProjectTree,
   },
   data() {
     var userstr = document.getElementById('app').attributes['data-user'].nodeValue;
@@ -27,7 +32,7 @@ export default {
     var authLevel = {
       "undefined": 0,
       "false": 1,
-      "ture": 2,
+      "true": 2,
     }[user.is_admin];
 
     return {routes, user, authLevel};
@@ -39,5 +44,6 @@ export default {
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
 }
 </style>

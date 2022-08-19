@@ -2,7 +2,6 @@ from flask import Flask
 from werkzeug.routing import BaseConverter
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_compress import Compress
 
 app = Flask(
     __name__,
@@ -14,7 +13,6 @@ app.config.from_prefixed_env()
 login_manager = LoginManager()
 login_manager.init_app(app)
 db = SQLAlchemy(app)
-Compress(app)
 
 class NoExtentionConverter(BaseConverter):
     regex = r'(?:[a-zA-Z0-9]+)'

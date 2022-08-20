@@ -1,24 +1,29 @@
 <template>
-  <div class="bg-gray-200 border-r border-gray-100 min-w-[20rem] p-2 overflow-y-auto max-h-[calc(100vh-4.1rem)]">
-    <h3 class="text-center text-xl font-medium border-b-2 mx-10 border-red-700 mb-2">Список проектов</h3>
-    <TreeView class="tree" :load-nodes-async="loadNodesAsync" :modelDefaults="modelDefaults" >
-      <template v-slot:text="{ model }">
-        <router-link :to="model.id" v-if="model.children.length == 0" :class="this.$route.path == model.id ? 'font-bold' : ''">
-          {{model.label}}
-        </router-link>
-        <span v-else>{{model.label}}</span>
-      </template>
+  <div class="bg-gray-200 border-r border-gray-100 min-w-[20rem] flex flex-col">
+    <div class="overflow-y-auto flex-auto p-2">
+      <h3 class="text-center text-xl font-medium border-b-2 mx-10 border-red-700 mb-2">Список проектов</h3>
+      <TreeView class="tree" :load-nodes-async="loadNodesAsync" :modelDefaults="modelDefaults" >
+        <template v-slot:text="{ model }">
+          <router-link :to="model.id" v-if="model.children.length == 0" :class="this.$route.path == model.id ? 'font-bold' : ''">
+            {{model.label}}
+          </router-link>
+          <span v-else>{{model.label}}</span>
+        </template>
 
-      <template v-slot:loading-root>
-        <div class="flex h-[calc(100vh-10rem)]"><Spinner class="m-auto"/></div>
-      </template>
-    </TreeView>
+        <template v-slot:loading-root>
+          <div class="flex h-[calc(100vh-11rem)]"><Spinner class="m-auto"/></div>
+        </template>
+      </TreeView>
+    </div>
+
+    <IntervalTimer v-if="showTimer" :initial-value="timerValue" class="flex-initial pb-2"/>
   </div>
 </template>
 
 <script>
   import TreeView from "@grapoza/vue-tree"
   import Spinner from 'vue-spinner/src/MoonLoader'
+  import IntervalTimer from '@/components/IntervalTimer'
   import '@vscode/codicons/dist/codicon.css'
 
   export default {
@@ -26,6 +31,7 @@
     components: {
       TreeView,
       Spinner,
+      IntervalTimer,
     },
     data() {
       return {
@@ -40,7 +46,15 @@
       loadNodesAsync() {
         return this.$http.get('/api/project_tree').then(e => e.data);
       }
-    }
+    },
+    computed: {
+      showTimer() {
+        return this.$root.user.has_current_task;
+      },
+      timerValue() {
+        return this.$root.user.timer || 0;
+      }
+    },
   }
 </script>
 

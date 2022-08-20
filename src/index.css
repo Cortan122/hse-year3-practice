@@ -18,6 +18,9 @@
   .button:focus {
     @apply outline-none border-gray-900 ring ring-gray-300;
   }
+  .max-h-page {
+    max-height: calc(100vh - 4.1rem);
+  }
 }
 
 .v-spinner .v-moon1 {

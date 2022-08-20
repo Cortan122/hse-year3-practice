@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50">
     <NavigationBar :routes="routes" :authLevel="authLevel" />
-    <div class="flex flex-row flex-grow">
+    <div class="flex flex-row flex-grow max-h-page">
       <ProjectTree :class="this.$route.name?.trim() == 'My Projects' ? '' : 'hidden'" v-if="authLevel" />
-      <main class="flex-grow">
+      <main class="flex-grow overflow-y-auto">
         <router-view/>
       </main>
     </div>

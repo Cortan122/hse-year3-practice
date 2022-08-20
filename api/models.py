@@ -57,7 +57,7 @@ class Project(TimestampMixin, db.Model):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "tasks": [e.to_dict() for e in self.tasks],
+            "tasks": sorted([e.to_dict() for e in self.tasks], key=lambda x: x['completed']),
         }
 
 class Task(TimestampMixin, db.Model):

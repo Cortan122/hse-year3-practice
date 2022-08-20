@@ -21,7 +21,7 @@ task.add_tag('frontend')
 task.add_tag('js')
 db.session.add(task)
 
-task = Task(name="Сделать главную страницу", description="с описанием того про что сайт", workload=1000_000, project=project)
+task = Task(name="Сделать главную страницу", description="с описанием того, про что сайт", workload=1000_000, project=project)
 task.add_tag('frontend')
 task.add_tag('design')
 db.session.add(task)

@@ -2,8 +2,9 @@ from datetime import datetime
 from flask import jsonify, request, abort, redirect, render_template
 from werkzeug.security import check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
+from sqlalchemy import or_, func, literal_column
 from app import app, db
-from models import Task, User, Company, Project, TaskLog
+from models import Task, User, Company, Project, TaskLog, Client
 
 def get_model(model, id):
     obj = model.query.get(id)
@@ -12,6 +13,33 @@ def get_model(model, id):
     if not current_user.can_access(obj):
         abort(403)
     return obj
+
+def sortable_table(model, columns=None, filter=None, query=None):
+    if columns == None:
+        columns = model.__table__.columns
+    if filter == None:
+        filter = [model.name, model.description]
+    if query == None:
+        query = model.query
+
+    if not current_user.is_admin:
+        return abort(403)
+
+    search = request.args.get('search')
+    sort = request.args.get('sort')
+
+    if search:
+        query = query.filter(or_(col.ilike(f"%{search}%") for col in filter))
+    if sort and sort.isidentifier():
+        if sort[0].isupper():
+            query = query.order_by(columns[sort.lower()].desc())
+        else:
+            query = query.order_by(columns[sort])
+
+    return jsonify({
+        "filter": {"search": search, "sort": sort},
+        "list": [e.to_shallow_dict() for e in query.all()],
+    })
 
 api_counter = 0
 @app.route("/api/counter")
@@ -38,6 +66,23 @@ def project_tree():
         return jsonify([e.to_tree_node() for e in Company.query.all()])
     else:
         return jsonify([current_user.company.to_tree_node()])
+
+@app.route("/api/projects")
+@login_required
+def projects():
+    sub_query = db.session.query(Task.project_id, func.count(Task.id).label('tasks_count')).group_by(Task.project_id).subquery()
+
+    return sortable_table(
+        Project,
+        filter=[Project.name, Project.description, Client.name, Company.name],
+        columns={
+            **Project.__table__.columns,
+            "client": Client.name,
+            "company": Company.name,
+            "tasks_count": literal_column('tasks_count'),
+        },
+        query=Project.query.join(sub_query, sub_query.c.project_id == Project.id).join(Client).join(Company),
+    )
 
 @app.route('/api/project/<int:id>')
 @login_required

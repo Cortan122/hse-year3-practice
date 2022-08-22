@@ -13,8 +13,8 @@ task_tags = db.Table('task_tags',
 
 class TimestampMixin:
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    created_on = db.Column(db.DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_on = db.Column(db.DateTime(timezone=True), onupdate=func.now(), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
 class Company(TimestampMixin, db.Model):
     name = db.Column(db.String(255), nullable=False)
@@ -58,6 +58,17 @@ class Project(TimestampMixin, db.Model):
             "name": self.name,
             "description": self.description,
             "tasks": sorted([e.to_dict() for e in self.tasks], key=lambda x: x['completed']),
+        }
+
+    def to_shallow_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "client": self.client.name,
+            "company": self.client.company.name,
+            "created_at": self.created_at,
+            "tasks_count": len(self.tasks),
         }
 
 class Task(TimestampMixin, db.Model):

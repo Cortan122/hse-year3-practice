@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full mt-32 absolute left-0 right-0 mx-auto">
+  <div class="w-full mt-32 absolute left-0 right-0 mx-auto z-10">
     <div v-if="show && error" @click="show = false"
     class="flex w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">
       <div class="flex items-center justify-center w-12 bg-red-500">

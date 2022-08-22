@@ -19,7 +19,7 @@
 
       <p v-if="isLong" class="italic">{{task.description}}</p>
 
-      <TagsEditor :tags="task.tags" />
+      <TagsEditor :tags="tags" @add-tag="addTag" @delete-tag="deleteTag" @replace-tag="replaceTag" />
 
       <PerfectScrollbar class="max-h-32 border mb-2" v-if="history.length">
         <LogCard :workload="task.workload" :log="log" v-for="log in history" :key="log.id"/>
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-  import moment from 'moment'
+  import humanizeDuration from 'humanize-duration'
   import TagsEditor from '@/components/TagsEditor'
   import LogCard from '@/components/LogCard'
   import PerfectScrollbar from '@/components/PerfectScrollbar'
@@ -53,11 +53,12 @@
       return {
         occupied_by: this.task.occupied_by,
         history: this.task.history,
+        tags: this.task.tags,
       };
     },
     methods: {
       duration(milliseconds) {
-        return moment.duration(milliseconds).humanize();
+        return humanizeDuration(milliseconds, { round: true, largest: 2, units: ['d', 'h', 'm'] });
       },
       start() {
         this.$root.user.has_current_task = true;
@@ -73,6 +74,18 @@
       },
       click() {
         this.occupied_by ? this.stop() : this.start();
+      },
+      addTag(tag) {
+        this.$http.post(`/api/task/${this.task.id}/tags/${tag}`).then(this.updateTags);
+      },
+      deleteTag(tag) {
+        this.$http.delete(`/api/task/${this.task.id}/tags/${tag}`).then(this.updateTags);
+      },
+      replaceTag(tag, newtag) {
+        this.$http.patch(`/api/task/${this.task.id}/tags/${tag}/to/${newtag}`).then(this.updateTags);
+      },
+      updateTags(tags) {
+        this.tags = tags.data;
       },
     },
     computed: {

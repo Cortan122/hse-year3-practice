@@ -27,7 +27,7 @@
 <script>
   import "vue3-circle-progress/dist/circle-progress.css"
   import CircleProgress from "vue3-circle-progress"
-  import moment from 'moment'
+  import humanizeDuration from 'humanize-duration'
 
   export default {
     name: 'LogCard',
@@ -48,7 +48,7 @@
         return this.log.duration / this.workload * 100;
       },
       duration() {
-        return moment.duration(this.log.duration).humanize();
+        return humanizeDuration(this.log.duration, { round: true, largest: 2 });
       },
       tooltip() {
         return new Date(this.log.duration).toISOString().substr(11, 8);

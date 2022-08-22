@@ -70,13 +70,16 @@ class Task(TimestampMixin, db.Model):
     occupied_by = db.relationship('User', backref='current_task', lazy=True, uselist=False)
     completed = db.Column(db.Boolean, nullable=False, server_default=expression.false())
 
+    def tags_list(self):
+        return [e.to_dict() for e in self.tags]
+
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "description": self.description,
             "workload": self.workload,
-            "tags": [e.to_dict() for e in self.tags],
+            "tags": self.tags_list(),
             "history": [e.to_dict() for e in self.history],
             "occupied_by": self.occupied_by.to_dict() if self.occupied_by else None,
             "completed": self.completed,
@@ -84,7 +87,14 @@ class Task(TimestampMixin, db.Model):
 
     def add_tag(self, tag: str):
         res = Tag.query.filter(Tag.name == tag).first()
+        if res in self.tags:
+            return
         self.tags.append(res if res else Tag(name=tag))
+
+    def remove_tag(self, tag: str):
+        res = Tag.query.filter(Tag.name == tag).first()
+        if res in self.tags:
+            self.tags.remove(res)
 
 class Tag(TimestampMixin, db.Model):
     name = db.Column(db.String(255), nullable=False, unique=True)

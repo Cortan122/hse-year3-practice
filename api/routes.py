@@ -44,6 +44,36 @@ def project_tree():
 def project(id):
     return jsonify(get_model(Project, id).to_dict())
 
+@app.route('/api/task/<int:id>')
+@login_required
+def task(id):
+    return jsonify(get_model(Task, id).to_dict())
+
+@app.route('/api/task/<int:id>/tags/<tag>', methods=["POST"])
+@login_required
+def add_tag(id, tag):
+    task = get_model(Task, id)
+    task.add_tag(tag)
+    db.session.commit()
+    return jsonify(task.tags_list())
+
+@app.route('/api/task/<int:id>/tags/<tag>', methods=["DELETE"])
+@login_required
+def remove_tag(id, tag):
+    task = get_model(Task, id)
+    task.remove_tag(tag)
+    db.session.commit()
+    return jsonify(task.tags_list())
+
+@app.route('/api/task/<int:id>/tags/<tag>/to/<newtag>', methods=["PATCH"])
+@login_required
+def change_tag(id, tag, newtag):
+    task = get_model(Task, id)
+    task.remove_tag(tag)
+    task.add_tag(newtag)
+    db.session.commit()
+    return jsonify(task.tags_list())
+
 @app.route('/api/task/<int:id>/start', methods=["POST"])
 @login_required
 def start_task(id):

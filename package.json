@@ -13,7 +13,7 @@
     "@vscode/codicons": "^0.0.32",
     "axios": "^0.27.2",
     "core-js": "^3.8.3",
-    "moment": "^2.29.4",
+    "humanize-duration": "^3.27.2",
     "perfect-scrollbar": "^1.5.5",
     "vue": "^3.2.13",
     "vue-axios": "^3.4.1",

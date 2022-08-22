@@ -19,7 +19,7 @@
         </div>
 
         <div class="hidden sm:flex sm:items-center sm:ml-6">
-          <button class="ml-3 relative text-black">
+          <button class="ml-3 relative text-black" tabindex="-1">
             <router-link to="/login" v-if="authLevel == 0">Log In</router-link>
             <a href="/api/logout" v-else>Log Out</a>
           </button>

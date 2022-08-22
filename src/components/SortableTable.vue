@@ -39,9 +39,9 @@
 <script>
 import SearchFilter from '@/components/SearchFilter'
 import Spinner from 'vue-spinner/src/MoonLoader'
-import mapValues from 'lodash/mapValues';
-import pickBy from 'lodash/pickBy';
-import throttle from 'lodash/throttle';
+import mapValues from 'lodash/mapValues'
+import pickBy from 'lodash/pickBy'
+import throttle from 'lodash/throttle'
 
 export default {
   name: "SortableTable",

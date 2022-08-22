@@ -1,49 +1,26 @@
 <template>
   <SortableTable :columns="columns" url="/api/projects" v-slot="{ entry }">
-    <!-- Project Name -->
-    <td class="border-t">
-      <p class="px-6 py-4 flex items-center focus:text-indigo-500">
+    <TableCell>
+      <router-link :to="`/project/${entry.id}`" class="hover:underline">
         {{ entry.name }}
-      </p>
-    </td>
-
-    <!-- Project Client -->
-    <td class="border-t">
-      <p class="px-6 py-4 flex items-center focus:text-indigo-500">
-        {{ entry.client }}
-      </p>
-    </td>
-
-    <!-- Project Company -->
-    <td class="border-t">
-      <p class="px-6 py-4 flex items-center focus:text-indigo-500">
-        {{ entry.company }}
-      </p>
-    </td>
-
-    <!-- Entry Date -->
-    <td class="border-t">
-      <p class="px-6 py-4 flex items-center" tabindex="-1">
-        {{ new Date(entry.created_at).toLocaleString("ru-RU") }}
-      </p>
-    </td>
-
-    <!-- Task Count -->
-    <td class="border-t">
-      <p class="px-6 py-4 flex items-center" tabindex="-1">
-        {{ entry.tasks_count }}
-      </p>
-    </td>
+      </router-link>
+    </TableCell>
+    <TableCell>{{ entry.client }}</TableCell>
+    <TableCell>{{ entry.company }}</TableCell>
+    <TableCell>{{ new Date(entry.created_at).toLocaleString("ru-RU") }}</TableCell>
+    <TableCell>{{ entry.tasks_count }}</TableCell>
   </SortableTable>
 </template>
 
 <script>
   import SortableTable from '@/components/SortableTable'
+  import TableCell from '@/components/TableCell'
 
   export default {
     name: 'ProjectsPage',
     components: {
       SortableTable,
+      TableCell,
     },
     data() {
       return {

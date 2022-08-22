@@ -39,7 +39,9 @@
 <script>
 import SearchFilter from '@/components/SearchFilter'
 import Spinner from 'vue-spinner/src/MoonLoader'
-import _ from 'lodash'
+import mapValues from 'lodash/mapValues';
+import pickBy from 'lodash/pickBy';
+import throttle from 'lodash/throttle';
 
 export default {
   name: "SortableTable",
@@ -65,7 +67,7 @@ export default {
   },
   methods: {
     reset() {
-      this.form = _.mapValues(this.form, () => null);
+      this.form = mapValues(this.form, () => null);
     },
     sort(newsort) {
       if (newsort == '') {
@@ -86,12 +88,12 @@ export default {
         this.form.search = e.data.filter.search;
         this.form.sort = e.data.filter.sort;
         this.form.tag = e.data.filter.tag;
-        this.$watch('form', _.throttle(this.update, 200), {deep: true});
+        this.$watch('form', throttle(this.update, 200), {deep: true});
         this.loading = false;
       }
     },
     update() {
-      var params = _.pickBy(this.form);
+      var params = pickBy(this.form);
       this.$http.get(this.url, {params}).then(this.init);
     },
   },

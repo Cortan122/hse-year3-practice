@@ -1,4 +1,5 @@
 <template>
+  <ErrorPopup />
   <div class="flex flex-col min-h-screen bg-gray-50">
     <NavigationBar :routes="routes" :authLevel="authLevel" />
     <div class="flex flex-row flex-grow max-h-page">
@@ -13,6 +14,7 @@
 <script>
 import NavigationBar from '@/components/NavigationBar'
 import ProjectTree from '@/components/ProjectTree'
+import ErrorPopup from '@/components/ErrorPopup'
 import routes from '@/routes.js'
 
 export default {
@@ -20,6 +22,7 @@ export default {
   components: {
     NavigationBar,
     ProjectTree,
+    ErrorPopup,
   },
   data() {
     var userstr = document.getElementById('app').attributes['data-user'].nodeValue;

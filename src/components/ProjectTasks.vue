@@ -5,7 +5,7 @@
     <div class="text-right w-7/12 italic mr-3 place-self-end">{{proj?.description}}</div>
   </div>
 
-  <div class="flex flex-wrap" v-if="!loading">
+  <div class="flex flex-wrap xl:mx-8" v-if="!loading">
     <TaskCard :task="task" v-for="task in proj?.tasks" :key="task.id"/>
   </div>
 

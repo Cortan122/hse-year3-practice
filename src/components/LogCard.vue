@@ -7,11 +7,13 @@
       />
     </div>
     <div class="my-1">
-      <a :href="'mailto:' + log.user.email" class="text-lg font-semibold" target="_blank">
-        {{log.user.first_name}} {{log.user.last_name}}
-      </a>
-      <span class="text-neutral-400">&nbsp;•&nbsp;</span>
-      <span :title="tooltip">{{duration}}</span>
+      <div class="line-clamp-1">
+        <a :href="'mailto:' + log.user.email" class="text-lg font-semibold" target="_blank">
+          {{log.user.first_name}} {{log.user.last_name}}
+        </a>
+        <span class="text-neutral-400">&nbsp;•&nbsp;</span>
+        <span :title="tooltip">{{duration}}</span>
+      </div>
 
       <div class="line-clamp-2">
         <span v-if="!isToday" class="italic text-sm">

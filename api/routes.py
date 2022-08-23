@@ -89,6 +89,72 @@ def project_tree():
     else:
         return jsonify([current_user.company.to_tree_node()])
 
+@app.route("/api/companies")
+@login_required
+def companies():
+    sub_query1 = db.session.query(Client.company_id, func.count(Client.id).label('clients_count')).group_by(Client.company_id).subquery()
+    sub_query2 = db.session.query(User.company_id, func.count(User.id).label('users_count')).group_by(User.company_id).subquery()
+    sub_query3 = db.session.query(Client.company_id, func.count(Project.id).label('projects_count')) \
+        .join(Project).group_by(Client.company_id).subquery()
+
+    return sortable_table(
+        Company,
+        filter=[Company.name],
+        columns={
+            **Company.__table__.columns,
+            "clients_count": literal_column('clients_count'),
+            "users_count": literal_column('users_count'),
+            "projects_count": literal_column('projects_count'),
+        },
+        query=Company.query
+            .outerjoin(sub_query1, sub_query1.c.company_id == Company.id)
+            .outerjoin(sub_query2, sub_query2.c.company_id == Company.id)
+            .outerjoin(sub_query3, sub_query3.c.company_id == Company.id),
+    )
+
+@app.route("/api/companies", methods=['POST'])
+@login_required
+@use_args({
+    "name": fields.Str(required=True),
+}, location="form")
+def add_company(args):
+    if not current_user.is_admin:
+        return abort(403)
+
+    db.session.add(Company(**args))
+    db.session.commit()
+    return redirect('/companies')
+
+@app.route("/api/clients")
+@login_required
+def clients():
+    sub_query = db.session.query(Project.client_id, func.count(Project.id).label('projects_count')).group_by(Project.client_id).subquery()
+
+    return sortable_table(
+        Client,
+        filter=[Client.name, Company.name],
+        columns={
+            **Client.__table__.columns,
+            "company": Company.name,
+            "projects_count": literal_column('projects_count'),
+        },
+        query=Client.query.outerjoin(sub_query, sub_query.c.client_id == Client.id).join(Company),
+    )
+
+@app.route("/api/clients", methods=['POST'])
+@login_required
+@use_args({
+    "name": fields.Str(required=True),
+    "company_id": fields.Number(required=True),
+}, location="form")
+def add_client(args):
+    if not current_user.is_admin:
+        return abort(403)
+
+    db.session.add(Client(**args))
+    db.session.commit()
+    return redirect('/clients')
+
 @app.route("/api/projects")
 @login_required
 def projects():

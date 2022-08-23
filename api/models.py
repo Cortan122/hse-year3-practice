@@ -28,6 +28,16 @@ class Company(TimestampMixin, db.Model):
             "children": [e.to_tree_node() for e in self.clients],
         }
 
+    def to_shallow_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at,
+            "users_count": len(self.employees),
+            "clients_count": len(self.clients),
+            "projects_count": sum(len(e.projects) for e in self.clients),
+        }
+
 class Client(TimestampMixin, db.Model):
     name = db.Column(db.String(255), nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
@@ -38,6 +48,15 @@ class Client(TimestampMixin, db.Model):
             "label": self.name,
             "id": f"/{self.__class__.__name__.lower()}/{self.id}",
             "children": [e.to_tree_node() for e in self.projects],
+        }
+
+    def to_shallow_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "company": self.company.name,
+            "created_at": self.created_at,
+            "projects_count": len(self.projects),
         }
 
 class Project(TimestampMixin, db.Model):

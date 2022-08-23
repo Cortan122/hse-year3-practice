@@ -25,9 +25,14 @@
           <input v-if="field.type == Boolean" :name="field.sort" type="checkbox" class="mx-2 translate-y-0.5"
             v-model="form[field.sort]"/>
 
-          <select v-if="field.type == 'select'" :name="field.sort" v-model="form[field.sort]" class="textbox mt-1 block">
+          <select v-if="field.type == 'select'" :name="field.sort" :required="field.required" class="textbox mt-1 block"
+            v-model="form[field.sort]">
             <option :value="opt.id" v-for="opt in options[field.options]" :key="opt.id">{{ opt.name }}</option>
           </select>
+
+          <textarea v-if="field.type == 'textarea'" :name="field.sort" :required="field.required"
+            class="textbox mt-1 block resize-none w-96"
+            v-model="form[field.sort]"></textarea>
         </label>
 
         <div class="flex items-center justify-end mt-4">

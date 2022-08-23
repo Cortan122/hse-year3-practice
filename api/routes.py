@@ -106,6 +106,21 @@ def projects():
         query=Project.query.outerjoin(sub_query, sub_query.c.project_id == Project.id).join(Client).join(Company),
     )
 
+@app.route("/api/projects", methods=['POST'])
+@login_required
+@use_args({
+    "name": fields.Str(required=True),
+    "description": fields.Str(),
+    "client_id": fields.Number(required=True),
+}, location="form")
+def add_project(args):
+    if not current_user.is_admin:
+        return abort(403)
+
+    db.session.add(Project(**args))
+    db.session.commit()
+    return redirect('/projects')
+
 @app.route("/api/users")
 @login_required
 def users():
@@ -139,8 +154,7 @@ def add_user(args):
     if User.query.filter(User.email == args['email']).count():
         return redirect('/users?err=email')
 
-    res = User(**args)
-    db.session.add(res)
+    db.session.add(User(**args))
     db.session.commit()
     return redirect('/users')
 

@@ -180,6 +180,18 @@ class User(TimestampMixin, UserMixin, db.Model):
             "timer": self.current_log().duration() if self.current_task else None,
         }
 
+    def to_shallow_dict(self):
+        return {
+            "id": self.id,
+            "name": f"{self.first_name} {self.last_name or ''}",
+            "email": self.email,
+            "is_admin": self.is_admin,
+            "has_current_task": self.current_task != None,
+            "company": self.company.name if self.company else None,
+            "created_at": self.created_at,
+            "tasks_count": len(self.history),
+        }
+
     def __html__(self):
         return json.dumps(self.to_dict())
 

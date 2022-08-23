@@ -2,6 +2,7 @@ import LoginPage from '@/components/LoginPage'
 import UndrawImage from '@/components/UndrawImage'
 import ProjectTasks from '@/components/ProjectTasks'
 import ProjectsPage from '@/components/ProjectsPage'
+import UsersPage from '@/components/UsersPage'
 import HomePage from '@/components/HomePage'
 
 export default [
@@ -11,4 +12,5 @@ export default [
   { path: '/home', component: UndrawImage, props: { icon: "blank_canvas", text: 'Проект пока не выбран' }, authLevel: 1, name: 'My Projects' },
   { path: '/project/:id', component: ProjectTasks, authLevel: 9, name: 'My Projects ' },
   { path: '/projects', component: ProjectsPage, authLevel: 2, name: 'Projects' },
+  { path: '/users', component: UsersPage, authLevel: 2, name: 'Users' },
 ]

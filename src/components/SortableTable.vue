@@ -32,6 +32,12 @@
 
       <!-- Pagination? -->
       <!-- <pagination :links="links" /> -->
+
+      <div class="flex items-center justify-end" v-if="button">
+        <button @click="newbtn" class="focus:outline-none bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-700 font-semibold rounded-lg py-2 px-5 text-white m-4">
+          New
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -49,9 +55,11 @@ export default {
     SearchFilter,
     Spinner,
   },
+  emits: ['newbtn'],
   props: {
     columns: {type: Array, required: true},
     url: {type: String, required: true},
+    button: Boolean,
   },
   data() {
     return {
@@ -95,6 +103,9 @@ export default {
     update() {
       var params = pickBy(this.form);
       this.$http.get(this.url, {params}).then(this.init);
+    },
+    newbtn() {
+      this.$emit('newbtn');
     },
   },
   created() {

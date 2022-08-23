@@ -26,6 +26,21 @@ task.add_tag('frontend')
 task.add_tag('design')
 db.session.add(task)
 
+client = Client(name="Самоненко Илья Юрьевич", company=company)
+db.session.add(client)
+project = Project(name="Parser Visualizer", description="win32 приложение для визуализации метода рекурсивного спуска", client=client)
+db.session.add(project)
+
+client = Client(name="Шадрин Михаил Дмитриевич", company=company)
+db.session.add(client)
+project = Project(name="Screenshot Editor", description="кроссплатформенное десктоп приложение для редактирования скриншотов", client=client)
+db.session.add(project)
+
+client = Client(name="Каширина Ольга Александровна", company=company)
+db.session.add(client)
+project = Project(name="Discount Delivery", description="мобильный агрегатор доставки из магазинов", client=client)
+db.session.add(project)
+
 company2 = Company(name="University of Groningen")
 db.session.add(company2)
 client = Client(name="Andrea Capiluppi", company=company2)

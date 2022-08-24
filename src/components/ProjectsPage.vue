@@ -1,5 +1,5 @@
 <template>
-  <SortableTable :columns="columns" url="/api/projects" v-slot="{ entry }" @newbtn="$refs.form.show()" button="true">
+  <SortableTable :columns="columns" url="/api/projects" v-slot="{ entry }" @newbtn="$refs.form.show()" :button="true">
     <TableCell>
       <router-link :to="`/project/${entry.id}`" class="hover:underline">
         {{ entry.name }}

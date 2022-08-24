@@ -108,11 +108,24 @@ class Task(TimestampMixin, db.Model):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "workload": self.workload,
+            "workload": self.workload or 3600_000,
             "tags": self.tags_list(),
             "history": [e.to_dict() for e in self.history],
             "occupied_by": self.occupied_by.to_dict() if self.occupied_by else None,
             "completed": self.completed,
+        }
+
+    def to_shallow_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "project_id": self.project_id,
+            "project": self.project.name,
+            "created_at": self.created_at,
+            "tasks_count": len(self.history),
+            "completed": self.completed,
+            "tags": self.tags_list(),
         }
 
     def add_tag(self, tag: str):

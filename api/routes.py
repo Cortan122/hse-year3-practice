@@ -6,7 +6,7 @@ from sqlalchemy import or_, func, literal_column
 from webargs import fields
 from webargs.flaskparser import use_args
 from app import app, db
-from models import Task, User, Company, Project, TaskLog, Client, Tag
+from models import Task, User, Company, Project, TaskLog, Client, Tag, task_tags
 
 def get_model(model, id):
     obj = model.query.get(id)
@@ -145,7 +145,7 @@ def clients():
 @login_required
 @use_args({
     "name": fields.Str(required=True),
-    "company_id": fields.Number(required=True),
+    "company_id": fields.Int(required=True),
 }, location="form")
 def add_client(args):
     if not current_user.is_admin:
@@ -177,7 +177,7 @@ def projects():
 @use_args({
     "name": fields.Str(required=True),
     "description": fields.Str(),
-    "client_id": fields.Number(required=True),
+    "client_id": fields.Int(required=True),
 }, location="form")
 def add_project(args):
     if not current_user.is_admin:
@@ -186,6 +186,47 @@ def add_project(args):
     db.session.add(Project(**args))
     db.session.commit()
     return redirect('/projects')
+
+@app.route("/api/tasks")
+@login_required
+def tasks():
+    sub_query1 = db.session.query(TaskLog.task_id, func.count(TaskLog.id).label('tasks_count')).group_by(TaskLog.task_id).subquery()
+    sub_query2 = db.session.query(task_tags.c.task_id, func.count(task_tags.c.tag_id).label('tags_count')) \
+        .group_by(task_tags.c.task_id).subquery()
+
+    return sortable_table(
+        Task,
+        filter=[Task.name, Task.description, Client.name],
+        columns={
+            **Task.__table__.columns,
+            "project": Project.name,
+            "tasks_count": literal_column('tasks_count'),
+            "tags_count": literal_column('tags_count'),
+        },
+        query=Task.query
+            .outerjoin(sub_query1, sub_query1.c.task_id == Task.id)
+            .outerjoin(sub_query2, sub_query2.c.task_id == Task.id).join(Project),
+    )
+
+@app.route("/api/tasks", methods=['POST'])
+@login_required
+@use_args({
+    "name": fields.Str(required=True),
+    "description": fields.Str(),
+    "workload": fields.Float(),
+    "tags": fields.DelimitedList(fields.Str()),
+    "project_id": fields.Int(required=True),
+}, location="form")
+def add_task(args):
+    if not current_user.is_admin:
+        return abort(403)
+
+    if 'tags' in args:
+        args['tags'] = [Tag(name=e) for e in args['tags']]
+
+    db.session.add(Task(**args))
+    db.session.commit()
+    return redirect('/tasks')
 
 @app.route("/api/users")
 @login_required
@@ -211,7 +252,7 @@ def users():
     "email": fields.Email(required=True),
     "password": fields.Str(required=True),
     "is_admin": fields.Bool(),
-    "company_id": fields.Number(),
+    "company_id": fields.Int(),
 }, location="form")
 def add_user(args):
     if not current_user.is_admin:

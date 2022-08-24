@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@grapoza/vue-tree": "^4.0.3",
+    "@sipec/vue3-tags-input": "^3.0.4",
     "@tailwindcss/line-clamp": "^0.4.0",
     "@vscode/codicons": "^0.0.32",
     "axios": "^0.27.2",
@@ -20,7 +21,8 @@
     "vue-axios": "^3.4.1",
     "vue-router": "^4.1.3",
     "vue-spinner": "^1.0.4",
-    "vue3-circle-progress": "^1.0.7"
+    "vue3-circle-progress": "^1.0.7",
+    "vue3-slider": "^1.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

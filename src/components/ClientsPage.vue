@@ -1,5 +1,5 @@
 <template>
-  <SortableTable :columns="columns" url="/api/clients" v-slot="{ entry }" @newbtn="$refs.form.show()" button="true">
+  <SortableTable :columns="columns" url="/api/clients" v-slot="{ entry }" @newbtn="$refs.form.show()" :button="true">
     <TableCell>{{ entry.name }}</TableCell>
     <TableCell>{{ entry.company }}</TableCell>
     <TableCell>{{ new Date(entry.created_at).toLocaleString("ru-RU") }}</TableCell>

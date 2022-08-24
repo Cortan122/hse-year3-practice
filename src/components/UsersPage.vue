@@ -1,5 +1,5 @@
 <template>
-  <SortableTable :columns="columns" url="/api/users" v-slot="{ entry }" @newbtn="$refs.form.show()" button="true">
+  <SortableTable :columns="columns" url="/api/users" v-slot="{ entry }" @newbtn="$refs.form.show()" :button="true">
     <TableCell>{{ entry.name }}</TableCell>
     <TableCell>{{ entry.email }}</TableCell>
     <TableCell>{{ entry.company }}</TableCell>

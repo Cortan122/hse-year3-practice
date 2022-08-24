@@ -1,6 +1,7 @@
 <template>
   <span v-for="tag in filteredTags" :key="tag.id" @dblclick="beginEdit(tag)"
-    class="text-white mx-1 my-1.5 bg-emerald-400 rounded-2xl px-2 py-1 inline-block">
+    class="text-white mx-1 my-1.5 rounded-2xl px-2 py-1 inline-block"
+    :class="{ 'bg-emerald-400': !readonly, 'bg-red-400': readonly}">
     &#8203;{{ tag.name }}&#8203;
   </span>
 
@@ -9,7 +10,7 @@
       class="text-white mx-1 my-1.5 bg-emerald-400 rounded-2xl px-3 py-1 inline-block border-none w-2/3 outline-emerald-600" />
   </form>
 
-  <button tabindex="0" aria-label="Add tags" @click="addTag()" v-if="!textbox_visible"
+  <button tabindex="0" aria-label="Add tags" @click="addTag()" v-if="!textbox_visible && !readonly"
     class="text-white mx-1 my-1.5 rounded-2xl px-2 py-1 inline-block font-bold w-8
     bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-600">
     &#8203;&#xff0b;&#8203;
@@ -20,10 +21,8 @@
 export default {
   name: "TagsEditor",
   props: {
-    tags: {
-      type: Array,
-      required: true,
-    }
+    tags: {type: Array, required: true},
+    readonly: {type: Boolean, default: false},
   },
   data() {
     return {
@@ -66,6 +65,7 @@ export default {
       this.textbox_value = '';
     },
     beginEdit(tag) {
+      if(this.readonly) return;
       this.textbox_value = tag.name;
       this.selected_tag = tag;
       this.textbox_visible = true;

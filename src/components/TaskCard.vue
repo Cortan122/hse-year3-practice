@@ -58,7 +58,7 @@
     },
     methods: {
       duration(milliseconds) {
-        return humanizeDuration(milliseconds, { round: true, largest: 2, units: ['d', 'h', 'm'] });
+        return humanizeDuration(milliseconds, { round: true, largest: 1, units: ['d', 'h', 'm'] });
       },
       start() {
         this.$root.user.has_current_task = true;

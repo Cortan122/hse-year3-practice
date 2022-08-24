@@ -20,7 +20,7 @@
 
           <input v-if="field.type == String" :name="field.sort" class="textbox mt-1 block"
             :type="field.inputtype || 'text'" :required="field.required" :autocomplete="field.autocomplete"
-            v-model="form[field.sort]" :readonly="field.readonly" :value="field.value"/>
+            v-model="form[field.sort]" :readonly="field.readonly"/>
 
           <input v-if="field.type == Boolean" :name="field.sort" type="checkbox" class="mx-2 translate-y-0.5"
             v-model="form[field.sort]"/>
@@ -123,6 +123,13 @@
       },
       hide() {
         this.shown = false;
+      },
+      updateValue() {
+        for(var field of this.fields) {
+          if(field.value) {
+            this.form[field.sort] = field.value;
+          }
+        }
       },
     },
     computed: {

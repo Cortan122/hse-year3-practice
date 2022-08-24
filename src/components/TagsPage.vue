@@ -53,6 +53,7 @@
       },
       rename(entry) {
         this.fields[0].value = entry.name;
+        this.$refs.form.updateValue();
         this.$refs.form.show();
       },
     },

@@ -228,6 +228,51 @@ def add_task(args):
     db.session.commit()
     return redirect('/tasks')
 
+@app.route("/api/tags")
+@login_required
+def tags():
+    sub_query = db.session.query(task_tags.c.tag_id, func.count(task_tags.c.task_id).label('tags_count')) \
+        .group_by(task_tags.c.tag_id).subquery()
+
+    return sortable_table(
+        Tag,
+        filter=[Tag.name],
+        columns={
+            **Tag.__table__.columns,
+            "tags_count": literal_column('tags_count'),
+        },
+        query=Tag.query.outerjoin(sub_query, sub_query.c.tag_id == Tag.id),
+    )
+
+@app.route("/api/tags/<int:id>", methods=['DELETE'])
+@login_required
+def delete_tag(id):
+    if not current_user.is_admin:
+        return abort(403)
+
+    res = Tag.query.get(id)
+    Tag.query.filter_by(id=id).delete()
+    db.session.commit()
+    return jsonify(res.to_dict())
+
+@app.route("/api/tags", methods=['POST'])
+@login_required
+@use_args({
+    "old_name": fields.Str(required=True),
+    "name": fields.Str(required=True),
+}, location="form")
+def rename_tag(args):
+    if not current_user.is_admin:
+        return abort(403)
+
+    if Tag.query.filter_by(name=args['name']).count():
+        return redirect('/tags?err=name')
+
+    res = Tag.query.filter_by(name=args['old_name']).first()
+    res.name = args['name']
+    db.session.commit()
+    return redirect('/tags')
+
 @app.route("/api/users")
 @login_required
 def users():

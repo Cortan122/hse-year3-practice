@@ -8,6 +8,7 @@ import UsersPage from '@/components/UsersPage'
 import ClientsPage from '@/components/ClientsPage'
 import CompaniesPage from '@/components/CompaniesPage'
 import TasksPage from '@/components/TasksPage'
+import TagsPage from '@/components/TagsPage'
 
 export default [
   { path: '/', component: HomePage, authLevel: 0, name: 'Home' },
@@ -21,4 +22,5 @@ export default [
   { path: '/clients', component: ClientsPage, authLevel: 2, name: 'Clients' },
   { path: '/companies', component: CompaniesPage, authLevel: 2, name: 'Companies' },
   { path: '/tasks', component: TasksPage, authLevel: 2, name: 'Tasks' },
+  { path: '/tags', component: TagsPage, authLevel: 2, name: 'Tags' },
 ]

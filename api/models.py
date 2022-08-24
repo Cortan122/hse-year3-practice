@@ -148,6 +148,14 @@ class Tag(TimestampMixin, db.Model):
             "name": self.name,
         }
 
+    def to_shallow_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at,
+            "tags_count": len(self.task),
+        }
+
 class TaskLog(TimestampMixin, db.Model):
     description = db.Column(db.Text, nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)

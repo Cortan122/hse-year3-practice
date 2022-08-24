@@ -20,7 +20,7 @@
 
           <input v-if="field.type == String" :name="field.sort" class="textbox mt-1 block"
             :type="field.inputtype || 'text'" :required="field.required" :autocomplete="field.autocomplete"
-            v-model="form[field.sort]"/>
+            v-model="form[field.sort]" :readonly="field.readonly" :value="field.value"/>
 
           <input v-if="field.type == Boolean" :name="field.sort" type="checkbox" class="mx-2 translate-y-0.5"
             v-model="form[field.sort]"/>
@@ -31,18 +31,13 @@
           </select>
 
           <textarea v-if="field.type == 'textarea'" :name="field.sort" :required="field.required"
-            class="textbox mt-1 block resize-none w-96"
-            v-model="form[field.sort]"></textarea>
+            class="textbox mt-1 block resize-none w-96" v-model="form[field.sort]"></textarea>
 
           <div v-if="field.type == 'tags'">
             <input :required="field.required" :name="field.sort" type='hidden' :value="jsonTags">
             <VueTagsInput
-              v-model="tag"
-              :tags="tags"
-              :autocomplete-items="filteredItems"
-              @tags-changed="newTags => {form[field.sort] = tags = newTags; tag = ''}"
-              class="w-3/5 mt-1 "
-            />
+              v-model="tag" :tags="tags" :autocomplete-items="filteredItems" class="w-3/5 mt-1"
+              @tags-changed="newTags => {form[field.sort] = tags = newTags; tag = ''}"/>
           </div>
 
           <div v-if="field.type == 'duration'" class="mt-1 mx-3 flex flex-row">
@@ -57,7 +52,7 @@
 
         <div class="flex items-center justify-end mt-4">
           <button class="button ml-4">
-            Create
+            {{buttonText}}
           </button>
         </div>
       </form>
@@ -78,6 +73,7 @@
     },
     props: {
       url: {type: String, required: true},
+      buttonText: {type: String, default: 'Create'},
       fields: {type: Array, required: true},
       title: String,
     },
@@ -96,8 +92,10 @@
     created() {
       if(this.$route.query.err) this.show();
 
-      var ctx = this;
-      ctx.$http.get('/api/options').then(e => ctx.options = e.data);
+      if(this.fields.filter(e => e.type == 'select' || e.type == 'tags').length) {
+        var ctx = this;
+        ctx.$http.get('/api/options').then(e => ctx.options = e.data);
+      }
     },
     methods: {
       click() {

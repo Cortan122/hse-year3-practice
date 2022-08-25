@@ -1,10 +1,15 @@
 <template>
   <div class="w-full flex items-center">
-    <div class="p-2">
+    <div class="p-2 relative">
       <CircleProgress fill-color="#41b883" :is-gradient="!log.finished"
         :percent="percent" :size="60" :border-width="7" :border-bg-width="7" :show-percent="true"
         :gradient="{angle: percent, startColor: '#bef264', stopColor: '#41b883'}"
       />
+      <div v-if="log.github_url" class="absolute bottom-2 right-2">
+        <a :href="log.github_url" target="_blank">
+          <i class="codicon codicon-github-inverted bg-white rounded-full !text-xl !leading-none" aria-hidden="true"></i>
+        </a>
+      </div>
     </div>
     <div class="my-1">
       <div class="line-clamp-1">

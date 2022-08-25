@@ -16,6 +16,7 @@
       </TreeView>
     </div>
 
+    <h3 v-if="showTimer" class="text-center text-2xl font-medium border-b-2 mx-20 border-red-700 mb-2">Таймер</h3>
     <IntervalTimer v-if="showTimer" :initial-value="timerValue" class="flex-initial pb-2"/>
   </div>
 </template>

@@ -115,7 +115,7 @@ def companies():
 @app.route("/api/companies", methods=['POST'])
 @login_required
 @use_args({
-    "name": fields.Str(required=True),
+    "name": fields.String(required=True),
 }, location="form")
 def add_company(args):
     if not current_user.is_admin:
@@ -144,8 +144,8 @@ def clients():
 @app.route("/api/clients", methods=['POST'])
 @login_required
 @use_args({
-    "name": fields.Str(required=True),
-    "company_id": fields.Int(required=True),
+    "name": fields.String(required=True),
+    "company_id": fields.Integer(required=True),
 }, location="form")
 def add_client(args):
     if not current_user.is_admin:
@@ -175,9 +175,9 @@ def projects():
 @app.route("/api/projects", methods=['POST'])
 @login_required
 @use_args({
-    "name": fields.Str(required=True),
-    "description": fields.Str(),
-    "client_id": fields.Int(required=True),
+    "name": fields.String(required=True),
+    "description": fields.String(),
+    "client_id": fields.Integer(required=True),
 }, location="form")
 def add_project(args):
     if not current_user.is_admin:
@@ -211,20 +211,26 @@ def tasks():
 @app.route("/api/tasks", methods=['POST'])
 @login_required
 @use_args({
-    "name": fields.Str(required=True),
-    "description": fields.Str(),
+    "name": fields.String(required=True),
+    "description": fields.String(),
     "workload": fields.Float(),
-    "tags": fields.DelimitedList(fields.Str()),
-    "project_id": fields.Int(required=True),
+    "tags": fields.DelimitedList(fields.String()),
+    "project_id": fields.Integer(required=True),
 }, location="form")
 def add_task(args):
     if not current_user.is_admin:
         return abort(403)
 
+    tags = []
     if 'tags' in args:
-        args['tags'] = [Tag(name=e) for e in args['tags']]
+        tags = args['tags']
+        del args['tags']
 
-    db.session.add(Task(**args))
+    task = Task(**args)
+    for tag in tags:
+        task.add_tag(tag)
+
+    db.session.add(task)
     db.session.commit()
     return redirect('/tasks')
 
@@ -258,8 +264,8 @@ def delete_tag(id):
 @app.route("/api/tags", methods=['POST'])
 @login_required
 @use_args({
-    "old_name": fields.Str(required=True),
-    "name": fields.Str(required=True),
+    "old_name": fields.String(required=True),
+    "name": fields.String(required=True),
 }, location="form")
 def rename_tag(args):
     if not current_user.is_admin:
@@ -292,12 +298,12 @@ def users():
 @app.route("/api/users", methods=['POST'])
 @login_required
 @use_args({
-    "first_name": fields.Str(required=True),
-    "last_name": fields.Str(),
+    "first_name": fields.String(required=True),
+    "last_name": fields.String(),
     "email": fields.Email(required=True),
-    "password": fields.Str(required=True),
-    "is_admin": fields.Bool(),
-    "company_id": fields.Int(),
+    "password": fields.String(required=True),
+    "is_admin": fields.Boolean(),
+    "company_id": fields.Integer(),
 }, location="form")
 def add_user(args):
     if not current_user.is_admin:
@@ -367,12 +373,34 @@ def stop_task():
     if not task:
         return abort(400)
 
-    # todo: set current_log description (and url)
     log = current_user.current_log()
     log.end_time = datetime.now()
     current_user.current_task = None
     db.session.commit()
-    return jsonify(task.to_dict())
+    return jsonify(log.to_dict())
+
+@app.route('/api/finalize/<int:id>', methods=["POST"])
+@login_required
+@use_args({
+    "github_url": fields.String(),
+    "description": fields.String(),
+    "is_completed": fields.Boolean(),
+}, location="form")
+def finalize_task(args, id):
+    log = TaskLog.query.get(id)
+    if log.user_id != current_user.id:
+        return abort(403)
+
+    if args.get('description'):
+        log.description = args['description']
+    if args.get('github_url'):
+        log.github_url = args['github_url']
+    if args.get('is_completed'):
+        log.task.completed = True
+        log.task.workload = sum(e.duration() for e in log.task.history)
+
+    db.session.commit()
+    return redirect(f'/project/{log.task.project.id}')
 
 @app.route("/api/login", methods=["POST"])
 def login():

@@ -158,6 +158,7 @@ class Tag(TimestampMixin, db.Model):
 
 class TaskLog(TimestampMixin, db.Model):
     description = db.Column(db.Text, nullable=True)
+    github_url = db.Column(db.String(255), nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     start_time = db.Column(db.DateTime(), nullable=False)
@@ -181,6 +182,7 @@ class TaskLog(TimestampMixin, db.Model):
             "finished": self.finished(),
             "duration": self.duration(),
             "start_date": self.start_time,
+            "github_url": self.github_url,
         }
 
 class User(TimestampMixin, UserMixin, db.Model):

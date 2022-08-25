@@ -28,6 +28,9 @@
       <button :class="buttonClass" @click="click" :disabled="!buttonEnabled">{{buttonText}}</button>
     </div>
   </div>
+
+  <CreationForm v-if="tasklog_id" :url="`/api/finalize/${tasklog_id}`" :fields="fields" ref="form"
+    title="Завершение работы" button-text="Commit"/>
 </template>
 
 <script>
@@ -35,6 +38,7 @@
   import TagsEditor from '@/components/TagsEditor'
   import LogCard from '@/components/LogCard'
   import PerfectScrollbar from '@/components/PerfectScrollbar'
+  import CreationForm from '@/components/CreationForm'
 
   export default {
     name: 'TaskCard',
@@ -42,6 +46,7 @@
       TagsEditor,
       PerfectScrollbar,
       LogCard,
+      CreationForm,
     },
     props: {
       task: {
@@ -54,6 +59,12 @@
         occupied_by: this.task.occupied_by,
         history: this.task.history,
         tags: this.task.tags,
+        tasklog_id: null,
+        fields: [
+          {name: 'Commit URL', sort: 'github_url', type: String, inputtype: 'url', placeholder: 'https://github.com/'},
+          {name: 'Description', sort: 'description', type: 'textarea'},
+          {name: 'Task completed?', sort: 'is_completed', type: Boolean},
+        ],
       };
     },
     methods: {
@@ -67,10 +78,14 @@
         this.$http.post(`/api/task/${this.task.id}/start`);
       },
       stop() {
-        this.occupied_by = null;
-        this.$root.user.has_current_task = false;
-        this.history[this.history.length-1].finished = true;
-        this.$http.post(`/api/stop`);
+        var ctx = this;
+        ctx.occupied_by = null;
+        ctx.$root.user.has_current_task = false;
+        ctx.history[ctx.history.length-1].finished = true;
+        ctx.$http.post(`/api/stop`).then(e => {
+          ctx.tasklog_id = parseInt(e.data.id);
+          setTimeout(() => ctx.$refs.form.show(), 100);
+        });
       },
       click() {
         this.occupied_by ? this.stop() : this.start();

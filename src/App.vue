@@ -3,9 +3,10 @@
   <div class="flex flex-col min-h-screen bg-gray-50">
     <NavigationBar :routes="routes" :authLevel="authLevel" />
     <div class="flex flex-row flex-grow max-h-page">
-      <ProjectTree :class="this.$route.name?.trim() == 'My Projects' ? '' : 'hidden'" v-if="authLevel" />
+      <ProjectTree :class="{hidden: proj}" title="Список проектов" url="/api/project_tree" v-if="authLevel" />
+      <ProjectTree :class="{hidden: stat}" title="Доступные графики" url="/api/stats_tree" v-if="authLevel" />
       <main class="flex-grow overflow-y-auto">
-        <router-view/>
+        <router-view />
       </main>
     </div>
   </div>
@@ -39,7 +40,18 @@ export default {
     }[user.is_admin];
 
     return {routes, user, authLevel};
-  }
+  },
+  computed: {
+    rtname() {
+      return this.$route.name?.trim();
+    },
+    proj() {
+      return this.rtname != 'My Projects';
+    },
+    stat() {
+      return this.rtname != 'Stats';
+    },
+  },
 }
 </script>
 

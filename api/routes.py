@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from datetime import datetime
 from flask import jsonify, request, abort, redirect, render_template
 from werkzeug.security import check_password_hash
@@ -65,6 +65,9 @@ def stats(user=False, tags=False, project=False, client=False):
     if tags:
         res = res.outerjoin(task_tags).outerjoin(Tag)
 
+    if isinstance(user, User):
+        res = res.filter(User.id == user.id)
+
     if not current_user.is_admin:
         res = res.filter(Company.id == current_user.company_id)
 
@@ -88,9 +91,34 @@ def datasets(stats, namefunc=None, title=None):
         users[username][month] += row['total'] / 3600_000
 
     return {
+        "type": "line",
         "labels": MONTHS,
         "title": title,
         "datasets": [{"label": k, "data": u} for k, u in users.items()],
+    }
+
+def pie_dataset(stats, namefunc=None, title=None):
+    if namefunc == None:
+        namefunc = lambda row: f"{row['user_first_name']} {row['user_last_name'] or ''}"
+    if type(namefunc) == str:
+        old_namefunc = namefunc
+        namefunc = lambda row: row[old_namefunc]
+
+    labels = OrderedDict()
+    total = 0
+
+    for row in stats:
+        val = row['total'] / 3600_000
+        total += val
+        labels.setdefault(namefunc(row), [0])[0] += val
+
+    return {
+        "type": "pie",
+        "labels": list(labels.keys()),
+        "title": title,
+        "datasets": [{"label": 'Dataset 1', "data": [
+            e[0]/total*100 for e in labels.values()
+        ]}],
     }
 
 api_counter = 0
@@ -139,7 +167,22 @@ def project_tree():
     else:
         return jsonify([current_user.company.to_tree_node()])
 
-@app.route("/api/stats/line")
+@app.route("/api/stats_tree")
+@login_required
+def stats_tree():
+    if current_user.is_admin:
+        users = User.query.all()
+    else:
+        users = User.query.filter_by(company_id=current_user.company_id).all()
+
+    return jsonify([
+        {"label": "Общая статистика", "id": "/stats"},
+        {"label": "Статистика отдельных пользователей", "id": "/users", "children": [
+            {"label": u.name(), "id": f"/stats/users/{u.id}"} for u in users
+        ]},
+    ])
+
+@app.route("/api/stats")
 @login_required
 def statistics():
     return jsonify([
@@ -148,6 +191,23 @@ def statistics():
         datasets(stats(project=True), namefunc='project_name', title='Активность проектов'),
         datasets(stats(client=True), namefunc='client_name', title='Активность клиентов'),
     ])
+
+@app.route("/api/stats/users/<int:id>")
+@login_required
+def user_stats(id):
+    user = get_model(User, id)
+
+    return jsonify({
+        "name": user.name(),
+        "list": [
+            pie_dataset(stats(user=user, tags=True), namefunc='tag_name', title='Распределение тегов'),
+            datasets(stats(user=user, tags=True), namefunc='tag_name'),
+            pie_dataset(stats(user=user, project=True), namefunc='project_name', title='Распределение проектов'),
+            datasets(stats(user=user, project=True), namefunc='project_name'),
+            pie_dataset(stats(user=user, client=True), namefunc='client_name', title='Распределение клиентов'),
+            datasets(stats(user=user, client=True), namefunc='client_name'),
+        ]
+    })
 
 @app.route("/api/companies")
 @login_required
@@ -492,5 +552,12 @@ def index(path):
 @login_required
 def project_index(id):
     if not Project.query.get(id):
+        return abort(404)
+    return index('')
+
+@app.route('/stats/users/<int:id>')
+@login_required
+def user_stats_index(id):
+    if not User.query.get(id):
         return abort(404)
     return index('')

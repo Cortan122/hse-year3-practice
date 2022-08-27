@@ -223,10 +223,16 @@ class User(TimestampMixin, UserMixin, db.Model):
             "timer": self.current_log().duration() if self.current_task else None,
         }
 
+    def name(self):
+        if self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        else:
+            return self.first_name
+
     def to_shallow_dict(self):
         return {
             "id": self.id,
-            "name": f"{self.first_name} {self.last_name or ''}",
+            "name": self.name(),
             "email": self.email,
             "is_admin": self.is_admin,
             "has_current_task": self.current_task != None,
@@ -249,4 +255,6 @@ class User(TimestampMixin, UserMixin, db.Model):
             obj = obj.company
         if isinstance(obj, Company):
             return self.company_id == obj.id
+        if isinstance(obj, User):
+            return self.company_id == obj.company_id
         return False

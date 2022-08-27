@@ -73,7 +73,7 @@
       };
     },
     async mounted() {
-      var responce = await this.$http.get('/api/stats/line');
+      var responce = await this.$http.get('/api/stats');
       this.charts = responce.data;
       this.loading = false;
     },

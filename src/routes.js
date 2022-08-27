@@ -3,6 +3,7 @@ const UndrawImage = () => import('@/components/UndrawImage')
 const ProjectTasks = () => import('@/components/ProjectTasks')
 const HomePage = () => import('@/components/HomePage')
 const BasicChart = () => import('@/components/BasicChart')
+const PieCharts = () => import('@/components/PieCharts')
 
 const ProjectsPage = () => import('@/components/ProjectsPage')
 const UsersPage = () => import('@/components/UsersPage')
@@ -18,6 +19,7 @@ export default [
   { path: '/home', component: UndrawImage, props: { icon: "blank_canvas", text: 'Проект пока не выбран' }, authLevel: 1, name: 'My Projects' },
   { path: '/project/:id', component: ProjectTasks, authLevel: 9, name: 'My Projects ' },
   { path: '/stats', component: BasicChart, authLevel: 1, name: 'Stats' },
+  { path: '/stats/users/:id', component: PieCharts, authLevel: 9, name: 'Stats ' },
 
   { path: '/projects', component: ProjectsPage, authLevel: 2, name: 'Projects' },
   { path: '/users', component: UsersPage, authLevel: 2, name: 'Users' },

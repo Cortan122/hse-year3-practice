@@ -163,6 +163,7 @@ class TaskLog(TimestampMixin, db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     start_time = db.Column(db.DateTime(), nullable=False)
     end_time = db.Column(db.DateTime(), nullable=True)
+    _duration = db.Column(db.Float, nullable=True)
 
     def finished(self):
         return self.end_time != None

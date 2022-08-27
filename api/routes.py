@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from flask import jsonify, request, abort, redirect, render_template
 from werkzeug.security import check_password_hash
@@ -7,6 +8,8 @@ from webargs import fields
 from webargs.flaskparser import use_args
 from app import app, db
 from models import Task, User, Company, Project, TaskLog, Client, Tag, task_tags
+
+MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 def get_model(model, id):
     obj = model.query.get(id)
@@ -42,6 +45,53 @@ def sortable_table(model, columns=None, filter=None, query=None):
         "filter": {"search": search, "sort": sort},
         "list": [e.to_shallow_dict() for e in query.all()],
     })
+
+def stats(user=False, tags=False, project=False, client=False):
+    # month = func.month(TaskLog.start_time) on postgres
+    month = func.strftime('%m', TaskLog.start_time)
+
+    cols = [month]
+    if user:
+        cols += [User.id, User.first_name, User.last_name]
+    if tags:
+        cols += [Tag.name]
+    if project:
+        cols += [Project.name, Project.id]
+    if client:
+        cols += [Client.name, Client.id]
+
+    res = db.session.query(*cols, func.sum(TaskLog._duration)) \
+        .join(User).join(Task, TaskLog.task_id == Task.id).join(Project).join(Client).join(Company)
+    if tags:
+        res = res.outerjoin(task_tags).outerjoin(Tag)
+
+    if not current_user.is_admin:
+        res = res.filter(Company.id == current_user.company_id)
+
+    res = res.group_by(*cols).all()
+    names = ['month', *[c.table.name + '_' + c.name for c in cols[1:]], 'total']
+
+    return [{names[i]: v for i, v in enumerate(row)} for row in res]
+
+def datasets(stats, namefunc=None, title=None):
+    if namefunc == None:
+        namefunc = lambda row: f"{row['user_first_name']} {row['user_last_name'] or ''}"
+    if type(namefunc) == str:
+        old_namefunc = namefunc
+        namefunc = lambda row: row[old_namefunc]
+
+    users = defaultdict(lambda: [0]*12)
+
+    for row in stats:
+        username = namefunc(row)
+        month = int(row['month']) - 1
+        users[username][month] += row['total'] / 3600_000
+
+    return {
+        "labels": MONTHS,
+        "title": title,
+        "datasets": [{"label": k, "data": u} for k, u in users.items()],
+    }
 
 api_counter = 0
 @app.route("/api/counter")
@@ -88,6 +138,16 @@ def project_tree():
         return jsonify([e.to_tree_node() for e in Company.query.all()])
     else:
         return jsonify([current_user.company.to_tree_node()])
+
+@app.route("/api/stats/line")
+@login_required
+def statistics():
+    return jsonify([
+        datasets(stats(user=True), title='Активность пользователей'),
+        datasets(stats(tags=True), namefunc='tag_name', title='Активность тегов'),
+        datasets(stats(project=True), namefunc='project_name', title='Активность проектов'),
+        datasets(stats(client=True), namefunc='client_name', title='Активность клиентов'),
+    ])
 
 @app.route("/api/companies")
 @login_required
@@ -375,6 +435,7 @@ def stop_task():
 
     log = current_user.current_log()
     log.end_time = datetime.now()
+    log._duration = log.duration()
     current_user.current_task = None
     db.session.commit()
     return jsonify(log.to_dict())

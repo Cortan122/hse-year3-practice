@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from datetime import datetime, timedelta
 from app import db
 from models import User, Company, Client, Project, Task, Tag, TaskLog
 
@@ -11,9 +12,20 @@ db.session.add(client)
 project = Project(name="Трекер проектов", description="маленькое веб приложение для трекинга работы над проектами", client=client)
 db.session.add(project)
 
+admin = User(first_name='admin', email='admin@example.com', password="hello", is_admin=True)
+user = User(first_name='Костя', last_name='Борисов', email='knborisov@edu.hse.ru', password="hi", company=company)
+
 task = Task(name="Сделать интерфейс с деревом", description="примерно как в vscode-е", workload=3600_000, project=project, completed=True)
 task.add_tag('frontend')
 task.add_tag('vuejs')
+
+tl = TaskLog(task=task, user=user, start_time=datetime.now() - timedelta(minutes=30, weeks=4), end_time=datetime.now() - timedelta(weeks=4))
+tl._duration = tl.duration()
+task.history.append(tl)
+
+tl = TaskLog(task=task, user=admin, start_time=datetime.now() - timedelta(minutes=30), end_time=datetime.now())
+tl._duration = tl.duration()
+task.history.append(tl)
 db.session.add(task)
 
 task = Task(name="Прикрутить таймер", description="чтобы обновлялся каждую секунду и давил на нервы", workload=500_000, project=project)
@@ -53,7 +65,7 @@ task.add_tag('backend')
 task.add_tag('php')
 db.session.add(task)
 
-db.session.add(User(first_name='admin', email='admin@example.com', password="hello", is_admin=True))
-db.session.add(User(first_name='Костя', last_name='Борисов', email='knborisov@edu.hse.ru', password="hi", company=company))
+db.session.add(admin)
+db.session.add(user)
 db.session.add(User(first_name='Kostya', last_name='Borisov', email='k.borisov@student.rug.nl', password="hi", company=company2))
 db.session.commit()

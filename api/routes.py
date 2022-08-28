@@ -67,11 +67,15 @@ def stats(user=False, tags=False, project=False, client=False):
 
     if isinstance(user, User):
         res = res.filter(User.id == user.id)
+    if isinstance(project, Project):
+        res = res.filter(Project.id == project.id)
+    if isinstance(client, Client):
+        res = res.filter(Client.id == client.id)
 
     if not current_user.is_admin:
         res = res.filter(Company.id == current_user.company_id)
 
-    res = res.group_by(*cols).all()
+    res = res.filter(TaskLog._duration != None).group_by(*cols).all()
     names = ['month', *[c.table.name + '_' + c.name for c in cols[1:]], 'total']
 
     return [{names[i]: v for i, v in enumerate(row)} for row in res]
@@ -120,6 +124,29 @@ def pie_dataset(stats, namefunc=None, title=None):
             e[0]/total*100 for e in labels.values()
         ]}],
     }
+
+def task_pie(proj_id, title=None):
+    cols = [Task.completed, Task.occupied_by != None, Task.started]
+    tasks = db.session.query(*cols, func.count(Task.id)).filter(Task.project_id == proj_id).group_by(*cols).all()
+    res = [0, 0, 0, 0]
+
+    for row in tasks:
+        idx = 0
+        for i in range(3):
+            if row[i]:
+                idx = i + 1
+                break
+        res[idx] += row[-1]
+
+    return {
+        "type": "donut",
+        "labels": ['New', 'Completed', 'Active', 'Started'],
+        "title": title,
+        "datasets": [{"label": 'Dataset 1', "data": res}],
+    }
+
+def pie_combo(stats, namefunc=None, title=None):
+    return [pie_dataset(stats, namefunc=namefunc, title=title), datasets(stats, namefunc=namefunc)]
 
 api_counter = 0
 @app.route("/api/counter")
@@ -172,13 +199,18 @@ def project_tree():
 def stats_tree():
     if current_user.is_admin:
         users = User.query.all()
+        projects = Project.query.all()
     else:
         users = User.query.filter_by(company_id=current_user.company_id).all()
+        projects = Project.query.join(Client).filter(Client.company_id == current_user.company_id).all()
 
     return jsonify([
         {"label": "Общая статистика", "id": "/stats"},
         {"label": "Статистика отдельных пользователей", "id": "/users", "children": [
             {"label": u.name(), "id": f"/stats/users/{u.id}"} for u in users
+        ]},
+        {"label": "Статистика отдельных проектов", "id": "/projects", "children": [
+            {"label": p.name, "id": f"/stats/projects/{p.id}"} for p in projects
         ]},
     ])
 
@@ -200,12 +232,23 @@ def user_stats(id):
     return jsonify({
         "name": user.name(),
         "list": [
-            pie_dataset(stats(user=user, tags=True), namefunc='tag_name', title='Распределение тегов'),
-            datasets(stats(user=user, tags=True), namefunc='tag_name'),
-            pie_dataset(stats(user=user, project=True), namefunc='project_name', title='Распределение проектов'),
-            datasets(stats(user=user, project=True), namefunc='project_name'),
-            pie_dataset(stats(user=user, client=True), namefunc='client_name', title='Распределение клиентов'),
-            datasets(stats(user=user, client=True), namefunc='client_name'),
+            *pie_combo(stats(user=user, tags=True), namefunc='tag_name', title='Распределение тегов'),
+            *pie_combo(stats(user=user, project=True), namefunc='project_name', title='Распределение проектов'),
+            *pie_combo(stats(user=user, client=True), namefunc='client_name', title='Распределение клиентов'),
+        ]
+    })
+
+@app.route("/api/stats/projects/<int:id>")
+@login_required
+def project_stats(id):
+    proj = get_model(Project, id)
+
+    return jsonify({
+        "name": proj.name,
+        "list": [
+            *pie_combo(stats(project=proj, tags=True), namefunc='tag_name', title='Распределение тегов'),
+            *pie_combo(stats(project=proj, user=True), title='Распределение пользователей'),
+            task_pie(id, title='Статус задач'),
         ]
     })
 
@@ -482,6 +525,7 @@ def start_task(id):
         return abort(400)
 
     task.occupied_by = current_user
+    task.started = True
     db.session.add(TaskLog(task=task, user=current_user, start_time=datetime.now()))
     db.session.commit()
     return jsonify(task.to_dict())
@@ -559,5 +603,12 @@ def project_index(id):
 @login_required
 def user_stats_index(id):
     if not User.query.get(id):
+        return abort(404)
+    return index('')
+
+@app.route('/stats/projects/<int:id>')
+@login_required
+def project_stats_index(id):
+    if not Project.query.get(id):
         return abort(404)
     return index('')

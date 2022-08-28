@@ -1,12 +1,12 @@
 <template>
   <div class="flex flex-col mb-5">
-    <h2 class="text-center text-3xl font-medium pb-1">Графики пользователя «{{name}}»</h2>
+    <h2 class="text-center text-3xl font-medium pb-1">{{titletmpl}} «{{name}}»</h2>
     <div class="border-b-2 border-red-700 mx-20 lg:mx-32 2xl:mx-[20%]"></div>
   </div>
 
   <div class="flex justify-center flex-col space-y-10" v-if="!loading">
     <div v-for="(data, i) in charts" :key="i">
-      <Pie :chart-data="data" :chart-options="title(data)" :height="50" v-if="data.type == 'pie'" class="w-1/3 mx-auto" />
+      <Pie :chart-data="data" :chart-options="title(data)" :height="50" v-if="data.type == 'pie' || data.type == 'donut'" class="w-1/3 mx-auto" />
       <Line :chart-data="data" :chart-options="title(data)" :height="250" v-if="data.type == 'line'" class="w-2/3 mx-auto" />
     </div>
   </div>
@@ -33,9 +33,21 @@
       Pie,
       Line,
     },
+    props: {
+      url: {type: String, required: true},
+      nametmpl: {type: String, required: true},
+      titletmpl: {type: String, required: true},
+    },
     methods: {
       title(data) {
-        return merge({}, data.type == 'pie' ? this.options_pie : this.options_line, {
+        var opts = this.options_line;
+        if(data.type == 'pie'){
+          opts = this.options_pie;
+        }else if(data.type == 'donut'){
+          opts = merge({}, this.options_pie, {cutout: '50%'});
+        }
+
+        return merge({}, opts, {
           plugins: {
             title: {
               display: !!data.title,
@@ -48,16 +60,17 @@
         })
       },
       async init() {
+        if(this.$route.path.split('/')[2] != this.url.split('/')[3])return;
         var id = parseInt(this.$route.params.id);
 
         this.id = id;
-        this.name = `Пользователь №${id}`;
+        this.name = `${this.nametmpl} №${id}`;
         this.loading = true;
         this.charts = null;
 
         if(isNaN(id))return;
 
-        var responce = await this.$http.get(`/api/stats/users/${id}`);
+        var responce = await this.$http.get(`${this.url}/${id}`);
         this.charts = responce.data.list;
         this.name = responce.data.name;
         this.loading = false;
@@ -67,6 +80,7 @@
       return {
         loading: true,
         id: null,
+        name: null,
         options_pie: {
           plugins: {
             autocolors: {
@@ -105,7 +119,10 @@
     watch: {
       '$route.params.id'() {
         this.init();
-      }
+      },
+      url() {
+        this.init();
+      },
     },
   }
 </script>

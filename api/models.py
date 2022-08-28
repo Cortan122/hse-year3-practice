@@ -99,6 +99,7 @@ class Task(TimestampMixin, db.Model):
     history = db.relationship('TaskLog', backref='task', lazy=True)
     occupied_by = db.relationship('User', backref='current_task', lazy=True, uselist=False)
     completed = db.Column(db.Boolean, nullable=False, server_default=expression.false())
+    started = db.Column(db.Boolean, nullable=False, server_default=expression.false())
 
     def tags_list(self):
         return [e.to_dict() for e in self.tags]

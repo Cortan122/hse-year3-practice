@@ -11,5 +11,6 @@ $ ./run.sh
 ```
 
 ## Todo
-1. статистика
 1. delete buttons
+1. придумать SITE_NAME
+1. заменить лого

@@ -19,7 +19,10 @@ export default [
   { path: '/home', component: UndrawImage, props: { icon: "blank_canvas", text: 'Проект пока не выбран' }, authLevel: 1, name: 'My Projects' },
   { path: '/project/:id', component: ProjectTasks, authLevel: 9, name: 'My Projects ' },
   { path: '/stats', component: BasicChart, authLevel: 1, name: 'Stats' },
-  { path: '/stats/users/:id', component: PieCharts, authLevel: 9, name: 'Stats ' },
+  { path: '/stats/users/:id', component: PieCharts, authLevel: 9, name: 'Stats ', props: {
+    url: '/api/stats/users', titletmpl: 'Графики пользователя', nametmpl: 'Пользователь' } },
+  { path: '/stats/projects/:id', component: PieCharts, authLevel: 9, name: 'Stats  ', props: {
+    url: '/api/stats/projects', titletmpl: 'Графики проекта', nametmpl: 'Проект' } },
 
   { path: '/projects', component: ProjectsPage, authLevel: 2, name: 'Projects' },
   { path: '/users', component: UsersPage, authLevel: 2, name: 'Users' },
